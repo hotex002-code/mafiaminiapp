@@ -1,0 +1,428 @@
+
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:1.5rem 0}
+.lbl{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+
+.device{background:var(--color-background-secondary);border-radius:20px;padding:12px;display:flex;flex-direction:column;align-items:center}
+.phone{width:100%;max-width:260px;background:#0D0D14;border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)}
+.tg-bar{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;background:#161622;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.tg-back{color:rgba(100,149,237,0.9);font-size:12px}
+.tg-title{font-size:13px;font-weight:500;color:#fff;flex:1;text-align:center}
+.tg-close{color:rgba(255,255,255,0.35);font-size:14px}
+
+.screen{display:none;flex-direction:column;min-height:420px}
+.screen.active{display:flex}
+
+.sc-lobby{background:#0D0D14;padding:16px 14px;flex:1}
+.lobby-head{text-align:center;padding:10px 0 14px}
+.lobby-icon{font-size:32px;margin-bottom:6px}
+.lobby-title{font-size:16px;font-weight:500;color:#fff}
+.lobby-sub{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px}
+.lobby-code{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:8px 12px;text-align:center;margin:8px 0}
+.lobby-code span{font-size:18px;font-weight:500;color:#CDB4FF;letter-spacing:3px;font-family:var(--font-mono)}
+.lobby-code small{display:block;font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px}
+.players-list{display:flex;flex-direction:column;gap:5px;margin:10px 0}
+.player-row{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.04);border-radius:8px}
+.p-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0}
+.p-name{font-size:12px;color:#E5E5EA;flex:1}
+.p-badge{font-size:10px;padding:2px 6px;border-radius:10px}
+.p-host{background:rgba(255,200,0,0.15);color:#FFD700}
+.p-ready{background:rgba(52,199,89,0.15);color:#34C759}
+.p-wait{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35)}
+.lobby-btn{width:100%;padding:10px;border-radius:12px;font-size:13px;font-weight:500;text-align:center;cursor:pointer;margin-top:8px;border:none}
+.btn-start{background:#534AB7;color:#fff}
+.btn-start:hover{background:#7F77DD}
+.btn-copy{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);font-size:12px;padding:7px;margin-top:4px}
+
+.sc-role{background:#0D0D14;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px;text-align:center}
+.role-reveal{background:#161622;border:0.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px 16px;width:100%}
+.role-icon-wrap{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px}
+.role-mafia .role-icon-wrap{background:rgba(226,75,74,0.15);border:0.5px solid rgba(226,75,74,0.3)}
+.role-civil .role-icon-wrap{background:rgba(52,199,89,0.1);border:0.5px solid rgba(52,199,89,0.25)}
+.role-detect .role-icon-wrap{background:rgba(55,138,221,0.1);border:0.5px solid rgba(55,138,221,0.25)}
+.role-doc .role-icon-wrap{background:rgba(29,158,117,0.1);border:0.5px solid rgba(29,158,117,0.25)}
+.role-name{font-size:18px;font-weight:500;color:#fff;margin-bottom:4px}
+.role-desc{font-size:11.5px;color:rgba(255,255,255,0.45);line-height:1.5}
+.role-tip{background:rgba(255,255,255,0.04);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:11px;color:rgba(255,255,255,0.5);text-align:left;line-height:1.5}
+.role-tip b{color:rgba(255,255,255,0.75)}
+
+.sc-night{background:#080810;flex:1;padding:14px}
+.night-header{text-align:center;padding:6px 0 12px}
+.night-phase{font-size:11px;color:rgba(205,180,255,0.6);text-transform:uppercase;letter-spacing:0.1em}
+.night-title{font-size:15px;font-weight:500;color:#fff;margin-top:3px}
+.night-subtitle{font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px}
+.night-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.night-player{background:#161622;border:0.5px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color 0.15s}
+.night-player:hover{border-color:rgba(226,75,74,0.5)}
+.night-player.selected{border-color:#E24B4A;background:rgba(226,75,74,0.08)}
+.night-player.dead{opacity:0.3;pointer-events:none}
+.np-av{width:32px;height:32px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff}
+.np-name{font-size:11px;color:rgba(255,255,255,0.7)}
+.np-status{font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px}
+.night-confirm{width:100%;padding:9px;border-radius:10px;background:#A32D2D;color:#fff;font-size:12px;font-weight:500;text-align:center;cursor:pointer;margin-top:10px;border:none}
+.night-confirm:hover{background:#E24B4A}
+.night-confirm:disabled{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3)}
+.night-timer{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;color:rgba(226,75,74,0.7);margin-top:6px;font-family:var(--font-mono)}
+
+.sc-day{background:#0D0D14;flex:1;padding:14px}
+.day-header{background:#161622;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.day-phase{font-size:10px;color:rgba(255,200,0,0.7);text-transform:uppercase;letter-spacing:0.1em}
+.day-event{font-size:12.5px;color:#fff;margin-top:2px;line-height:1.4}
+.chat-area{background:#161622;border-radius:10px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:5px}
+.chat-msg{display:flex;gap:6px;align-items:flex-start}
+.chat-av{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#fff}
+.chat-body{flex:1}
+.chat-who{font-size:10px;color:rgba(255,255,255,0.4)}
+.chat-text{font-size:11.5px;color:#E5E5EA;line-height:1.4}
+.vote-section{background:#161622;border-radius:10px;padding:10px}
+.vote-title{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px}
+.vote-row{display:flex;align-items:center;gap:6px;padding:4px 0}
+.vote-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#fff;flex-shrink:0}
+.vote-name{font-size:12px;color:#E5E5EA;flex:1}
+.vote-bar-wrap{width:70px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.vote-bar{height:100%;background:#E24B4A;border-radius:2px;transition:width 0.4s}
+.vote-count{font-size:10px;color:rgba(255,255,255,0.4);min-width:16px;text-align:right}
+
+.sc-end{background:#0D0D14;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center}
+.end-icon{font-size:40px;margin-bottom:10px}
+.end-title{font-size:18px;font-weight:500;margin-bottom:4px}
+.end-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px}
+.roles-reveal{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%}
+.rev-card{background:#161622;border-radius:8px;padding:7px;display:flex;align-items:center;gap:6px}
+.rev-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;flex-shrink:0}
+.rev-name{font-size:11px;color:rgba(255,255,255,0.7);flex:1}
+.rev-role{font-size:10px;padding:2px 5px;border-radius:6px}
+.rev-m{background:rgba(226,75,74,0.15);color:#F09595}
+.rev-c{background:rgba(52,199,89,0.12);color:#34C759}
+.rev-d{background:rgba(55,138,221,0.12);color:#85B7EB}
+.rev-doc{background:rgba(29,158,117,0.12);color:#5DCAA5}
+.end-btn{margin-top:14px;padding:9px 24px;background:#534AB7;color:#fff;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;border:none}
+
+.ctrl{text-align:center;margin-top:10px}
+.ctrl-btn{font-size:12px;padding:5px 14px;color:var(--color-text-secondary);background:none;border:0.5px solid var(--color-border-secondary);border-radius:20px;cursor:pointer;margin:3px}
+.scene-dots{display:flex;justify-content:center;gap:5px;margin-top:7px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--color-border-secondary)}
+.sdot.on{background:#534AB7}
+
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.bdg{font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px}
+.b-vue{background:#EAF3DE;color:#3B6D11}
+.b-ws{background:#EEEDFE;color:#3C3489}
+.b-pg{background:#E6F1FB;color:#185FA5}
+.b-rd{background:#FAEEDA;color:#854F0B}
+.tabs{display:flex;gap:2px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:3px;margin-bottom:14px}
+.tab{flex:1;text-align:center;padding:5px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary)}
+.tab.on{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary)}
+.pane{display:none}.pane.on{display:block}
+.fstep{display:flex;gap:10px;padding:7px 0;position:relative}
+.fstep:not(:last-child):after{content:'';position:absolute;left:13px;top:33px;bottom:0;width:1px;background:var(--color-border-tertiary)}
+.ficon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;z-index:1}
+.fi-pu{background:#EEEDFE;color:#3C3489}
+.fi-rd{background:#FCEBEB;color:#A32D2D}
+.fi-gr{background:#EAF3DE;color:#3B6D11}
+.fi-am{background:#FAEEDA;color:#854F0B}
+.fi-bl{background:#E6F1FB;color:#185FA5}
+.ftitle{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.fdesc{font-size:11.5px;color:var(--color-text-secondary);margin-top:1px;line-height:1.4}
+.code-b{background:#0D1117;border-radius:var(--border-radius-md);padding:10px 12px;font-family:var(--font-mono);font-size:10.5px;line-height:1.75;color:#c9d1d9;overflow:auto}
+.kw{color:#FF7B72}.fn{color:#D2A8FF}.st{color:#A5D6FF}.cm{color:#8B949E}.cl{color:#FFA657}.nm{color:#79C0FF}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.sc2{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 11px}
+.sn{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.sl{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.mono{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);line-height:1.9}
+</style>
+
+<h2 class="sr-only">Mafia MiniApp — интерактивное демо многопользовательской игры для портфолио</h2>
+
+<div class="root">
+  <div>
+    <p class="lbl">Демо MiniApp</p>
+    <div class="device">
+      <div class="phone">
+        <div class="tg-bar">
+          <span class="tg-back">&#8249; Назад</span>
+          <span class="tg-title" id="bar-title">Мафия</span>
+          <span class="tg-close">&#10005;</span>
+        </div>
+
+        <div class="screen active sc-lobby" id="sc-lobby">
+          <div class="lobby-head">
+            <div class="lobby-icon" style="font-size:32px">&#127183;</div>
+            <div class="lobby-title">Игра «Мафия»</div>
+            <div class="lobby-sub">Ожидание игроков...</div>
+          </div>
+          <div class="lobby-code">
+            <span>MF-4829</span>
+            <small>код для входа в комнату</small>
+          </div>
+          <div class="players-list">
+            <div class="player-row"><div class="p-av" style="background:#534AB7">АИ</div><div class="p-name">Алексей И.</div><span class="p-badge p-host">хост</span></div>
+            <div class="player-row"><div class="p-av" style="background:#0F6E56">МС</div><div class="p-name">Мария С.</div><span class="p-badge p-ready">готова</span></div>
+            <div class="player-row"><div class="p-av" style="background:#993C1D">ДК</div><div class="p-name">Дмитрий К.</div><span class="p-badge p-ready">готов</span></div>
+            <div class="player-row"><div class="p-av" style="background:#854F0B">ОП</div><div class="p-name">Ольга П.</div><span class="p-badge p-wait">ждёт</span></div>
+            <div class="player-row"><div class="p-av" style="background:#185FA5">НВ</div><div class="p-name">Николай В.</div><span class="p-badge p-ready">готов</span></div>
+          </div>
+          <button class="lobby-btn btn-copy" onclick="void(0)">&#128203; Скопировать ссылку</button>
+          <button class="lobby-btn btn-start" onclick="nextScreen()">Начать игру (5/8)</button>
+        </div>
+
+        <div class="screen sc-role" id="sc-role">
+          <div class="role-reveal role-mafia" id="role-card">
+            <div class="role-icon-wrap" style="font-size:28px">&#128272;</div>
+            <div class="role-name" id="role-name">Мафия</div>
+            <div class="role-desc" id="role-desc">Ты — тёмная сторона. Каждую ночь выбираешь жертву вместе с напарником.</div>
+            <div class="role-tip" id="role-tip"><b>Твой напарник:</b> Дмитрий К.<br>Общайтесь в секретном чате мафии.</div>
+          </div>
+          <button class="lobby-btn btn-start" style="width:100%;margin-top:14px" onclick="nextScreen()">Понял, к игре &#8594;</button>
+        </div>
+
+        <div class="screen sc-night" id="sc-night">
+          <div class="night-header">
+            <div class="night-phase">Ночь 1</div>
+            <div class="night-title">&#128274; Город засыпает</div>
+            <div class="night-subtitle">Мафия выбирает жертву</div>
+          </div>
+          <div class="night-grid">
+            <div class="night-player" id="np-0" onclick="selectTarget(0)"><div class="np-av" style="background:#0F6E56">МС</div><div class="np-name">Мария С.</div><div class="np-status">мирный</div></div>
+            <div class="night-player" id="np-1" onclick="selectTarget(1)"><div class="np-av" style="background:#854F0B">ОП</div><div class="np-name">Ольга П.</div><div class="np-status">мирный</div></div>
+            <div class="night-player" id="np-2" onclick="selectTarget(2)"><div class="np-av" style="background:#185FA5">НВ</div><div class="np-name">Николай В.</div><div class="np-status">мирный</div></div>
+            <div class="night-player dead"><div class="np-av" style="background:#444">?</div><div class="np-name">Скрыт</div><div class="np-status">мирный</div></div>
+          </div>
+          <button class="night-confirm" id="night-confirm" disabled onclick="nextScreen()">Выбрать жертву</button>
+          <div class="night-timer" id="night-timer">&#9679; 00:45</div>
+        </div>
+
+        <div class="screen sc-day" id="sc-day">
+          <div class="day-header">
+            <div class="day-phase">День 2 — Обсуждение</div>
+            <div class="day-event">&#9760; Этой ночью погибла <b style="color:#F09595">Ольга П.</b></div>
+          </div>
+          <div class="chat-area">
+            <div class="chat-msg"><div class="chat-av" style="background:#534AB7">АИ</div><div class="chat-body"><div class="chat-who">Алексей И.</div><div class="chat-text">Мне кажется Николай вёл себя подозрительно...</div></div></div>
+            <div class="chat-msg"><div class="chat-av" style="background:#0F6E56">МС</div><div class="chat-body"><div class="chat-who">Мария С.</div><div class="chat-text">Согласна! Он вчера ни слова не сказал</div></div></div>
+            <div class="chat-msg"><div class="chat-av" style="background:#185FA5">НВ</div><div class="chat-body"><div class="chat-who">Николай В.</div><div class="chat-text">Я мирный! Проверьте Алексея</div></div></div>
+          </div>
+          <div class="vote-section">
+            <div class="vote-title">Голосование за исключение</div>
+            <div class="vote-row"><div class="vote-av" style="background:#185FA5">НВ</div><div class="vote-name">Николай В.</div><div class="vote-bar-wrap"><div class="vote-bar" style="width:75%"></div></div><div class="vote-count">3</div></div>
+            <div class="vote-row"><div class="vote-av" style="background:#534AB7">АИ</div><div class="vote-name">Алексей И.</div><div class="vote-bar-wrap"><div class="vote-bar" style="width:25%"></div></div><div class="vote-count">1</div></div>
+          </div>
+          <button class="lobby-btn btn-start" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;font-size:12px" onclick="nextScreen()">Перейти к результату</button>
+        </div>
+
+        <div class="screen sc-end" id="sc-end">
+          <div class="end-icon" style="font-size:40px">&#127881;</div>
+          <div class="end-title" style="color:#34C759">Мирные победили!</div>
+          <div class="end-sub">Мафия разоблачена на 2-й день</div>
+          <div class="roles-reveal">
+            <div class="rev-card"><div class="rev-av" style="background:#A32D2D">АИ</div><div class="rev-name">Алексей И.</div><span class="rev-role rev-m">мафия</span></div>
+            <div class="rev-card"><div class="rev-av" style="background:#0F6E56">МС</div><div class="rev-name">Мария С.</div><span class="rev-role rev-c">мирный</span></div>
+            <div class="rev-card"><div class="rev-av" style="background:#993C1D">ДК</div><div class="rev-name">Дмитрий К.</div><span class="rev-role rev-m">мафия</span></div>
+            <div class="rev-card"><div class="rev-av" style="background:#185FA5">НВ</div><div class="rev-name">Николай В.</div><span class="rev-role rev-d">детектив</span></div>
+            <div class="rev-card"><div class="rev-av" style="background:#854F0B">ОП</div><div class="rev-name">Ольга П.</div><span class="rev-role rev-doc">доктор</span></div>
+          </div>
+          <button class="end-btn" onclick="goLobby()">Играть снова</button>
+        </div>
+      </div>
+
+      <div class="scene-dots" id="sdots"></div>
+      <div class="ctrl">
+        <button class="ctrl-btn" onclick="goLobby()">&#8635; Сначала</button>
+        <button class="ctrl-btn" onclick="nextScreen()">Далее &#8250;</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="lbl">Детали проекта</p>
+    <div class="panel">
+      <div class="badges">
+        <span class="bdg b-vue">Vue 3</span>
+        <span class="bdg b-ws">WebSocket</span>
+        <span class="bdg b-pg">FastAPI</span>
+        <span class="bdg b-pg">PostgreSQL</span>
+        <span class="bdg b-rd">Redis</span>
+        <span class="bdg b-vue">TG MiniApp SDK</span>
+      </div>
+      <div class="tabs">
+        <div class="tab on" onclick="sw('flow')">Поток</div>
+        <div class="tab" onclick="sw('code')">Код</div>
+        <div class="tab" onclick="sw('stats')">Структура</div>
+      </div>
+
+      <div class="pane on" id="pane-flow">
+        <div class="fstep">
+          <div class="ficon fi-pu">&#9654;</div>
+          <div><div class="ftitle">Лобби — создание / вход</div><div class="fdesc">Хост создаёт комнату, игроки входят по коду через MiniApp</div></div>
+        </div>
+        <div class="fstep">
+          <div class="ficon fi-am">&#127183;</div>
+          <div><div class="ftitle">Раздача ролей</div><div class="fdesc">Сервер случайно раздаёт роли: мафия, детектив, доктор, мирные</div></div>
+        </div>
+        <div class="fstep">
+          <div class="ficon fi-rd">&#128274;</div>
+          <div><div class="ftitle">Ночная фаза</div><div class="fdesc">Мафия голосует в секретном WS-канале, детектив проверяет, доктор лечит</div></div>
+        </div>
+        <div class="fstep">
+          <div class="ficon fi-am">&#9728;</div>
+          <div><div class="ftitle">Дневная фаза</div><div class="fdesc">Публичный чат, голосование за исключение, таймер</div></div>
+        </div>
+        <div class="fstep">
+          <div class="ficon fi-bl">&#9654;&#9654;</div>
+          <div><div class="ftitle">State machine</div><div class="fdesc">LOBBY &#8594; NIGHT &#8594; DAY &#8594; VOTE &#8594; END (Redis Pub/Sub)</div></div>
+        </div>
+        <div class="fstep">
+          <div class="ficon fi-gr">&#10003;</div>
+          <div><div class="ftitle">Итог игры</div><div class="fdesc">Раскрытие ролей, статистика, повтор</div></div>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-code">
+        <div class="code-b"><span class="cm"># game/state_machine.py</span>
+<span class="kw">class</span> <span class="cl">GameEngine</span>:
+  <span class="kw">async def</span> <span class="fn">night_vote</span>(self, room_id, voter_id, target_id):
+    key = <span class="st">f"room:{room_id}:night_votes"</span>
+    <span class="kw">await</span> self.redis.<span class="fn">hset</span>(key, voter_id, target_id)
+
+    mafia = <span class="kw">await</span> self.<span class="fn">get_mafia_players</span>(room_id)
+    votes = <span class="kw">await</span> self.redis.<span class="fn">hgetall</span>(key)
+
+    <span class="kw">if</span> <span class="fn">len</span>(votes) == <span class="fn">len</span>(mafia):
+      victim = <span class="cl">Counter</span>(votes.values()).<span class="fn">most_common</span>(<span class="nm">1</span>)[<span class="nm">0</span>][<span class="nm">0</span>]
+      <span class="kw">await</span> self.<span class="fn">process_night_result</span>(room_id, victim)
+      <span class="kw">await</span> self.<span class="fn">broadcast</span>(room_id, {
+        <span class="st">"event"</span>: <span class="st">"night_end"</span>,
+        <span class="st">"victim"</span>: victim,
+      })</div>
+      </div>
+
+      <div class="pane" id="pane-stats">
+        <div class="mono">
+          &#128193; mafia-miniapp/<br>
+          &nbsp;&nbsp;&#9500;&#9472; frontend/ <span style="color:var(--color-text-tertiary)">(Vue 3)</span><br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9500;&#9472; screens/<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9474;&nbsp;&nbsp; &#9500;&#9472; Lobby.vue<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9474;&nbsp;&nbsp; &#9500;&#9472; RoleReveal.vue<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9474;&nbsp;&nbsp; &#9500;&#9472; Night.vue<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9474;&nbsp;&nbsp; &#9492;&#9472; Day.vue<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9492;&#9472; composables/useWS.js<br>
+          &nbsp;&nbsp;&#9500;&#9472; backend/ <span style="color:var(--color-text-tertiary)">(FastAPI)</span><br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9500;&#9472; game/state_machine.py<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9500;&#9472; ws/manager.py<br>
+          &nbsp;&nbsp;&#9474;&nbsp;&nbsp; &#9492;&#9472; api/rooms.py<br>
+          &nbsp;&nbsp;&#9492;&#9472; docker-compose.yml
+        </div>
+        <div class="sg">
+          <div class="sc2"><div class="sn">5</div><div class="sl">ролей в игре</div></div>
+          <div class="sc2"><div class="sn">WS</div><div class="sl">реалтайм каналы</div></div>
+          <div class="sc2"><div class="sn">FSM</div><div class="sl">state machine</div></div>
+          <div class="sc2"><div class="sn">8</div><div class="sl">игроков макс.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var screens = ['sc-lobby','sc-role','sc-night','sc-day','sc-end'];
+var barTitles = ['\u041b\u043e\u0431\u0431\u0438','\u0412\u0430\u0448\u0430 \u0440\u043e\u043b\u044c','\u041d\u043e\u0447\u044c 1','\u0414\u0435\u043d\u044c 2','\u0418\u0442\u043e\u0433 \u0438\u0433\u0440\u044b'];
+var cur = 0;
+var selectedTarget = -1;
+var timerInterval = null;
+var timerSec = 45;
+
+function showScreen(idx) {
+  screens.forEach(function(id) {
+    var el = document.getElementById(id);
+    el.classList.remove('active');
+    el.style.display = 'none';
+  });
+  var el = document.getElementById(screens[idx]);
+  el.style.display = 'flex';
+  el.classList.add('active');
+  document.getElementById('bar-title').textContent = barTitles[idx];
+  renderDots(idx);
+  if (idx === 2) startTimer();
+  else stopTimer();
+  if (idx === 1) animateRoleReveal();
+}
+
+function renderDots(active) {
+  var c = document.getElementById('sdots');
+  c.innerHTML = '';
+  screens.forEach(function(_,i){
+    var d = document.createElement('span');
+    d.className = 'sdot' + (i===active?' on':'');
+    c.appendChild(d);
+  });
+}
+
+function nextScreen() {
+  cur = (cur + 1) % screens.length;
+  selectedTarget = -1;
+  showScreen(cur);
+}
+
+function goLobby() {
+  cur = 0;
+  selectedTarget = -1;
+  showScreen(0);
+}
+
+function selectTarget(idx) {
+  document.querySelectorAll('.night-player').forEach(function(el,i){
+    el.classList.toggle('selected', i === idx);
+  });
+  selectedTarget = idx;
+  document.getElementById('night-confirm').disabled = false;
+}
+
+function startTimer() {
+  timerSec = 45;
+  stopTimer();
+  timerInterval = setInterval(function(){
+    timerSec--;
+    if (timerSec < 0) { stopTimer(); return; }
+    var m = Math.floor(timerSec/60);
+    var s = timerSec % 60;
+    document.getElementById('night-timer').textContent =
+      '\u25cf ' + (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+var roles = [
+  {cls:'role-mafia', icon:'\ud83d\udd12', name:'\u041c\u0430\u0444\u0438\u044f', desc:'\u0422\u044b \u2014 \u0442\u0451\u043c\u043d\u0430\u044f \u0441\u0442\u043e\u0440\u043e\u043d\u0430. \u041a\u0430\u0436\u0434\u0443\u044e \u043d\u043e\u0447\u044c \u0432\u044b\u0431\u0438\u0440\u0430\u0435\u0448\u044c \u0436\u0435\u0440\u0442\u0432\u0443 \u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u043d\u0430\u043f\u0430\u0440\u043d\u0438\u043a\u043e\u043c.', tip:'\u0422\u0432\u043e\u0439 \u043d\u0430\u043f\u0430\u0440\u043d\u0438\u043a: \u0414\u043c\u0438\u0442\u0440\u0438\u0439 \u041a.\u003cbr\u003e\u041e\u0431\u0449\u0430\u0439\u0442\u0435\u0441\u044c \u0432 \u0441\u0435\u043a\u0440\u0435\u0442\u043d\u043e\u043c \u0447\u0430\u0442\u0435 \u043c\u0430\u0444\u0438\u0438.'},
+  {cls:'role-detect', icon:'\ud83d\udd0e', name:'\u0414\u0435\u0442\u0435\u043a\u0442\u0438\u0432', desc:'\u041a\u0430\u0436\u0434\u0443\u044e \u043d\u043e\u0447\u044c \u0442\u044b \u043c\u043e\u0436\u0435\u0448\u044c \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u043e\u0434\u043d\u043e\u0433\u043e \u0438\u0433\u0440\u043e\u043a\u0430: \u043c\u0430\u0444\u0438\u044f \u043e\u043d \u0438\u043b\u0438 \u043d\u0435\u0442?', tip:'\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044e \u043c\u0443\u0434\u0440\u043e: \u043d\u0435 \u0440\u0430\u0441\u043a\u0440\u044b\u0432\u0430\u0439 \u0440\u043e\u043b\u044c \u0440\u0430\u043d\u044c\u0448\u0435 \u0432\u0440\u0435\u043c\u0435\u043d\u0438.'},
+  {cls:'role-doc', icon:'\ud83d\udc89', name:'\u0414\u043e\u043a\u0442\u043e\u0440', desc:'\u041a\u0430\u0436\u0434\u0443\u044e \u043d\u043e\u0447\u044c \u0442\u044b \u043c\u043e\u0436\u0435\u0448\u044c \u0438\u0437\u043b\u0435\u0447\u0438\u0442\u044c \u043e\u0434\u043d\u043e\u0433\u043e \u0438\u0433\u0440\u043e\u043a\u0430 \u043e\u0442 \u0443\u0441\u0442\u0440\u0430\u043d\u0435\u043d\u0438\u044f \u043c\u0430\u0444\u0438\u0435\u0439.', tip:'\u041d\u0435\u043b\u044c\u0437\u044f \u043b\u0435\u0447\u0438\u0442\u044c \u0441\u0435\u0431\u044f \u0434\u0432\u0430 \u0445\u043e\u0434\u0430 \u043f\u043e\u0434\u0440\u044f\u0434.'},
+  {cls:'role-civil', icon:'\ud83d\udc64', name:'\u041c\u0438\u0440\u043d\u044b\u0439', desc:'\u0422\u044b \u2014 \u043e\u0431\u044b\u0447\u043d\u044b\u0439 \u0436\u0438\u0442\u0435\u043b\u044c. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439 \u043b\u043e\u0433\u0438\u043a\u0443 \u0438 \u0443\u0431\u0435\u0436\u0434\u0435\u043d\u0438\u0435, \u0447\u0442\u043e\u0431\u044b \u0432\u044b\u0441\u043b\u0435\u0434\u0438\u0442\u044c \u043c\u0430\u0444\u0438\u044e.', tip:'\u0421\u043b\u0443\u0448\u0430\u0439 \u0432\u0441\u0435\u0445, \u0434\u043e\u0432\u0435\u0440\u044f\u0439 \u0434\u0435\u0442\u0435\u043a\u0442\u0438\u0432\u0443. \u0418\u043d\u043e\u0433\u0434\u0430 \u043c\u043e\u043b\u0447\u0430\u043d\u0438\u0435 \u043f\u043e\u0434\u043e\u0437\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0435\u0435 \u0441\u043b\u043e\u0432.'}
+];
+var roleIdx = 0;
+function animateRoleReveal() {
+  var r = roles[roleIdx % roles.length];
+  roleIdx++;
+  var card = document.getElementById('role-card');
+  card.className = 'role-reveal ' + r.cls;
+  card.querySelector('.role-icon-wrap').textContent = r.icon;
+  document.getElementById('role-name').textContent = r.name;
+  document.getElementById('role-desc').textContent = r.desc;
+  document.getElementById('role-tip').innerHTML = r.tip;
+}
+
+function sw(id) {
+  document.querySelectorAll('.tab').forEach(function(t,i){
+    t.classList.toggle('on',['flow','code','stats'][i]===id);
+  });
+  document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('on'); });
+  document.getElementById('pane-'+id).classList.add('on');
+}
+
+showScreen(0);
+</script>
